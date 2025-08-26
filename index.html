@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text2Image Prompt Maker</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
+      #main {
+        max-width: 800px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+      }
+      .control-group {
+        display: flex;
+        flex-direction: column;
+      }
+      .control-group label {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .control-group select {
+        padding: 6px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        background: #fff;
+      }
+      #buttons {
+        text-align: center;
+        margin-bottom: 15px;
+      }
+      button {
+        margin: 0 10px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      #copyBtn {
+        background: #007bff;
+        color: #fff;
+      }
+      #masterGenerateBtn {
+        background: #28a745;
+        color: #fff;
+        position: relative;
+      }
+      #promptBox {
+        width: 100%;
+        height: 200px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        resize: vertical;
+        font-size: 14px;
+      }
+      .copy-indicator {
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #28a745;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        display: none;
+        white-space: nowrap;
+      }
+      .copy-indicator::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border: 5px solid transparent;
+        border-top-color: #28a745;
+      }
+      .loading {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+        padding: 20px;
+      }
+      .error {
+        text-align: center;
+        color: #dc3545;
+        background: #f8d7da;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 10px 0;
+        border: 1px solid #f5c6cb;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <h1>Text2Image Prompt Maker</h1>
+      
+      <div id="loadingMessage" class="loading">Loading data files...</div>
+      <div id="errorMessage" class="error" style="display: none;"></div>
+      
+      <div class="controls" id="controls" style="display: none;"></div>
+      
+      <div id="buttons" style="display: none;">
+        <button id="copyBtn">Copy Prompt</button>
+        <span
+          id="copyStatus"
+          style="margin-left: 10px; color: green; display: none"
+          >✓ Copied</span
+        >
+      </div>
+
+      <!-- Step 1: Base Randomization -->
+      <div style="text-align: center; margin-bottom: 10px; display: none;" class="button-section">
+        <button
+          id="randomBtn"
+          title="Randomly fills all dropdowns for a fresh character setup."
+        >
+          🎲 1. Randomize Prompt
+        </button>
+      </div>
+
+      <!-- Step 2: Core Enhancement Passes -->
+      <div style="text-align: center; margin-bottom: 10px; display: none;" class="button-section">
+        <button
+          id="refineBtn"
+          title="Adds category-specific visual detail for hair, clothing, body, etc."
+        >
+          🔧 2. Refine Prompt
+        </button>
+        <button
+          id="styleMoodBtn"
+          title="Matches mood and lighting to your selected style for scene coherence."
+        >
+          🎨 3. Apply Style-Mood Matrix
+        </button>
+      </div>
+
+      <!-- Step 3: Scene & Motion -->
+      <div style="text-align: center; margin-bottom: 10px; display: none;" class="button-section">
+        <button
+          id="detailBtn"
+          title="Adds environmental or scene-based visual elements based on setting."
+        >
+          🌄 4. Expand Details
+        </button>
+        <button
+          id="boosterBtn"
+          title="Adds one visual action or expression booster for realism or movement."
+        >
+          🎬 5. Add Visual Booster
+        </button>
+      </div>
+
+      <!-- Step 4: Final Assembly -->
+      <div style="text-align: center; margin-bottom: 15px; display: none;" class="button-section">
+        <button
+          id="structuredPromptBtn"
+          title="Generates the final structured prompt using all current inputs."
+        >
+          🛠️ 6. Generate Structured Prompt
+        </button>
+      </div>
+
+      <!-- Master Automation Button with Auto-Copy -->
+      <div style="text-align: center; margin-bottom: 15px; position: relative; display: none;" class="button-section">
+        <button
+          id="masterGenerateBtn"
+          style="font-weight: bold; font-size: 16px; padding: 8px 20px"
+          title="Runs all steps in optimal order to build a high-quality, coherent image prompt and automatically copies it to clipboard."
+        >
+          ⚡ Build Optimized Prompt & Copy
+        </button>
+        <div id="masterCopyIndicator" class="copy-indicator">✓ Copied to Clipboard!</div>
+      </div>
+
+      <textarea
+        id="promptBox"
+        readonly
+        placeholder="Your generated prompt will appear here..."
+        style="display: none;"
+      ></textarea>
+    </div>
+
+    <script>
+      // Ordered categories optimized for DALL·E/Flux prompting
+      const orderedKeys = [
+        "Subject",
+        "Body Type",
+        "Hair Style",
+        "Hair Color",
+        "Hair Accessories",
+        "Clothing",
+        "Common Accessories",
+        "Mood",
+        "Environment",
+        "Lighting",
+        "Style",
+        "Camera",
+      ];
+
+      // Global variables for loaded data
+      let data = {};
+      let categoryRefiners = {};
+      let matrix = {};
+      let boosterSlots = {};
+
+      // Load external JSON files with better error handling
+      async function loadAllData() {
+        const files = [
+          { name: 'data.json', variable: 'data' },
+          { name: 'categoryRefiners.json', variable: 'categoryRefiners' },
+          { name: 'matrix.json', variable: 'matrix' },
+          { name: 'boosterSlots.json', variable: 'boosterSlots' }
+        ];
+
+        const results = await Promise.allSettled(
+          files.map(async file => {
+            try {
+              const response = await fetch(file.name);
+              if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+              }
+              const json = await response.json();
+              return { file: file.name, variable: file.variable, data: json };
+            } catch (error) {
+              throw new Error(`${file.name}: ${error.message}`);
+            }
+          })
+        );
+
+        const failed = results.filter(result => result.status === 'rejected');
+        if (failed.length > 0) {
+          const errorMessages = failed.map(result => result.reason.message).join('\n');
+          throw new Error(`Failed to load files:\n${errorMessages}`);
+        }
+
+        // Assign loaded data to global variables
+        results.forEach(result => {
+          const { variable, data: jsonData } = result.value;
+          switch(variable) {
+            case 'data': data = jsonData; break;
+            case 'categoryRefiners': categoryRefiners = jsonData; break;
+            case 'matrix': matrix = jsonData; break;
+            case 'boosterSlots': boosterSlots = jsonData; break;
+          }
+        });
+      }
+
+      function showError(message) {
+        const errorDiv = document.getElementById("errorMessage");
+        errorDiv.innerHTML = message.replace(/\n/g, '<br>');
+        errorDiv.style.display = "block";
+        document.getElementById("loadingMessage").style.display = "none";
+      }
+
+      function hideLoadingAndShowUI() {
+        document.getElementById("loadingMessage").style.display = "none";
+        document.getElementById("errorMessage").style.display = "none";
+        document.getElementById("controls").style.display = "grid";
+        document.getElementById("buttons").style.display = "block";
+        document.getElementById("promptBox").style.display = "block";
+        
+        // Show all button sections
+        const buttonSections = document.querySelectorAll(".button-section");
+        buttonSections.forEach(section => section.style.display = "block");
+      }
+
+      function initControls() {
+        const controlsDiv = document.getElementById("controls");
+        controlsDiv.innerHTML = "";
+        
+        orderedKeys.forEach((key) => {
+          const idKey = key.replace(/\s/g, "") + "Select";
+          const group = document.createElement("div");
+          group.className = "control-group";
+          group.innerHTML = `
+            <label for="${idKey}">${key}</label>
+            <select id="${idKey}"></select>
+          `;
+          controlsDiv.appendChild(group);
+
+          const sel = group.querySelector("select");
+          const placeholder = document.createElement("option");
+          placeholder.value = "";
+          placeholder.textContent = `— select ${key} —`;
+          placeholder.disabled = true;
+          placeholder.selected = true;
+          sel.appendChild(placeholder);
+
+          // Handle both nested objects and arrays in data
+          if (data[key]) {
+            if (typeof data[key] === "object" && !Array.isArray(data[key])) {
+              // Nested object with categories
+              Object.keys(data[key]).forEach((label) => {
+                const optgroup = document.createElement("optgroup");
+                optgroup.label = label;
+                if (Array.isArray(data[key][label])) {
+                  data[key][label].forEach((opt) => {
+                    const o = document.createElement("option");
+                    o.value = opt;
+                    o.textContent = opt;
+                    optgroup.appendChild(o);
+                  });
+                }
+                sel.appendChild(optgroup);
+              });
+            } else if (Array.isArray(data[key])) {
+              // Simple array
+              data[key].forEach((opt) => {
+                const o = document.createElement("option");
+                o.value = opt;
+                o.textContent = opt;
+                sel.appendChild(o);
+              });
+            }
+          }
+
+          sel.addEventListener("change", updatePrompt);
+        });
+
+        updatePrompt();
+      }
+
+      // Update prompt by concatenating selected values
+      function updatePrompt() {
+        const parts = orderedKeys
+          .map((key) => {
+            const sel = document.getElementById(key.replace(/\s/g, "") + "Select");
+            return sel ? sel.value : "";
+          })
+          .filter((val) => val && !/^-.+-$/.test(val));
+        document.getElementById("promptBox").value = parts.join(", ");
+      }
+
+      function randomizePrompt() {
+        orderedKeys.forEach((key) => {
+          const select = document.getElementById(key.replace(/\s/g, "") + "Select");
+          if (!select) return;
+
+          const options = Array.from(select.options).filter(
+            (o) => !o.disabled && o.value
+          );
+          if (options.length > 0) {
+            const randomOption = options[Math.floor(Math.random() * options.length)];
+            select.value = randomOption.value;
+          }
+        });
+        updatePrompt();
+      }
+
+      // Enhanced copy function with visual feedback
+      function copyToClipboard(text, indicatorId = 'copyStatus') {
+        return navigator.clipboard.writeText(text).then(() => {
+          const indicator = document.getElementById(indicatorId);
+          indicator.style.display = "inline";
+          setTimeout(() => {
+            indicator.style.display = "none";
+          }, 2000);
+        }).catch((err) => {
+          console.error('Failed to copy text: ', err);
+          // Fallback for older browsers
+          const textArea = document.createElement('textarea');
+          textArea.value = text;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          const indicator = document.getElementById(indicatorId);
+          indicator.style.display = "inline";
+          setTimeout(() => {
+            indicator.style.display = "none";
+          }, 2000);
+        });
+      }
+
+      // --- Enhancement Functions ---
+      function getCategoryRefiner(category, value) {
+        if (categoryRefiners[category] && categoryRefiners[category][value]) {
+          const list = categoryRefiners[category][value];
+          return list[Math.floor(Math.random() * list.length)];
+        }
+        return "";
+      }
+
+      function getStyleMoodLighting(promptText) {
+        if (!matrix || Object.keys(matrix).length === 0) {
+          return { mood: "", lighting: "" };
+        }
+        
+        const lowerPrompt = promptText.toLowerCase();
+        const key = Object.keys(matrix).find((styleKey) =>
+          lowerPrompt.includes(styleKey.toLowerCase())
+        );
+        
+        if (!key || !matrix[key]) return { mood: "", lighting: "" };
+        
+        const { moods = [], lighting = [] } = matrix[key];
+        return {
+          mood: moods.length > 0 ? moods[Math.floor(Math.random() * moods.length)] : "",
+          lighting: lighting.length > 0 ? lighting[Math.floor(Math.random() * lighting.length)] : "",
+        };
+      }
+
+      function cleanPhrasing(rawPrompt) {
+        let result = rawPrompt;
+        result = result.replace(/\bwith ([^,]+), with ([^,]+)/gi, "with $1 and $2");
+        result = result.replace(/\bwearing ([^,]+), wearing ([^,]+)/gi, "wearing $1 and $2");
+        result = result.replace(/,\s*$/, "");
+        result = result.charAt(0).toUpperCase() + result.slice(1);
+        if (!result.endsWith(".")) result += ".";
+        return result;
+      }
+
+      function buildPromptFromTemplate() {
+        const getVal = (label) => {
+          const select = document.getElementById(label.replace(/\s/g, "") + "Select");
+          return select?.value || "";
+        };
+        
+        const subject = getVal("Subject");
+        const hair = getVal("Hair Style");
+        const hairColor = getVal("Hair Color");
+        const body = getVal("Body Type");
+        const clothing = getVal("Clothing");
+        const accessories = getVal("Common Accessories");
+        const hairAccessories = getVal("Hair Accessories");
+        const environment = getVal("Environment");
+        const style = getVal("Style");
+        const mood = getVal("Mood");
+        const lighting = getVal("Lighting");
+        const camera = getVal("Camera");
+
+        const hairRefiner = getCategoryRefiner("Hair Style", hair);
+        const clothingRefiner = getCategoryRefiner("Clothing", clothing);
+        const accessoryRefiner = getCategoryRefiner("Common Accessories", accessories);
+        const hairAccessoryRefiner = getCategoryRefiner("Hair Accessories", hairAccessories);
+        const bodyRefiner = getCategoryRefiner("Body Type", body);
+        const moodRefiner = getCategoryRefiner("Mood", mood);
+
+        const matrixResult = getStyleMoodLighting(style || "");
+        const finalMood = mood || matrixResult.mood;
+        const finalLighting = lighting || matrixResult.lighting;
+
+        const appearance = [hairColor, hair, hairRefiner, body, bodyRefiner, clothing, clothingRefiner].filter(Boolean).join(", ");
+        const adornment = [hairAccessories, hairAccessoryRefiner, accessories, accessoryRefiner].filter(Boolean).join(", ");
+        const scene = environment ? `standing in ${environment}` : "";
+        const styleMoodLight = [style, finalMood, moodRefiner, finalLighting].filter(Boolean).join(", ");
+
+        const structuredParts = [
+          `A ${subject || "woman"}`,
+          appearance ? `${appearance}` : "",
+          adornment ? `adorned with ${adornment}` : "",
+          scene,
+          styleMoodLight ? `in a ${styleMoodLight}` : "",
+          camera,
+        ].filter(Boolean);
+
+        const rawPrompt = structuredParts.join(", ").replace(/\s+,/g, ",").trim();
+        return cleanPhrasing(rawPrompt);
+      }
+
+      function refinePrompt() {
+        const box = document.getElementById("promptBox");
+        box.value = buildPromptFromTemplate();
+        return box.value;
+      }
+
+      function applyStyleMoodMatrix() {
+        const box = document.getElementById("promptBox");
+        const current = box.value;
+        
+        if (!matrix || Object.keys(matrix).length === 0) return;
+        
+        const lowerPrompt = current.toLowerCase();
+        const styleKey = Object.keys(matrix).find((k) =>
+          lowerPrompt.includes(k.toLowerCase())
+        );
+        
+        if (styleKey && matrix[styleKey]) {
+          const { moods = [], lighting = [] } = matrix[styleKey];
+          
+          const hasMood = moods.some((m) => current.includes(m));
+          if (!hasMood && moods.length > 0) {
+            const randomMood = moods[Math.floor(Math.random() * moods.length)];
+            box.value += `, ${randomMood}`;
+          }
+          
+          const hasLighting = lighting.some((l) => current.includes(l));
+          if (!hasLighting && lighting.length > 0) {
+            const randomLighting = lighting[Math.floor(Math.random() * lighting.length)];
+            box.value += `, ${randomLighting}`;
+          }
+        }
+      }
+
+      function expandDetails() {
+        const box = document.getElementById("promptBox");
+        const environmentDetails = [
+          "with soft atmospheric depth",
+          "surrounded by ambient environmental details",
+          "with natural lighting effects",
+        ];
+        const detail = environmentDetails[Math.floor(Math.random() * environmentDetails.length)];
+        if (!box.value.toLowerCase().includes(detail.toLowerCase())) {
+          box.value += `, ${detail}`;
+        }
+      }
+
+      function applyVisualBooster() {
+        const box = document.getElementById("promptBox");
+        const current = box.value.toLowerCase();
+        let added = [];
+        
+        if (boosterSlots && Object.keys(boosterSlots).length > 0) {
+          Object.entries(boosterSlots).forEach(([slot, options]) => {
+            if (!Array.isArray(options)) return;
+            
+            const already = options.some((opt) => current.includes(opt.toLowerCase()));
+            if (already) return;
+            
+            const available = options.filter(opt => !current.includes(opt.toLowerCase()));
+            if (available.length > 0) {
+              const pick = available[Math.floor(Math.random() * available.length)];
+              added.push(pick);
+            }
+          });
+        }
+        
+        if (added.length > 0) {
+          box.value += `, ${added.slice(0, 1).join(", ")}`;
+        }
+      }
+
+      function setupEventListeners() {
+        // Copy to clipboard (original button)
+        document.getElementById("copyBtn").addEventListener("click", () => {
+          copyToClipboard(document.getElementById("promptBox").value);
+        });
+
+        document.getElementById("randomBtn").addEventListener("click", randomizePrompt);
+        document.getElementById("refineBtn").addEventListener("click", refinePrompt);
+        document.getElementById("styleMoodBtn").addEventListener("click", applyStyleMoodMatrix);
+        document.getElementById("detailBtn").addEventListener("click", expandDetails);
+        document.getElementById("boosterBtn").addEventListener("click", applyVisualBooster);
+        document.getElementById("structuredPromptBtn").addEventListener("click", () => {
+          const box = document.getElementById("promptBox");
+          box.value = buildPromptFromTemplate();
+        });
+
+        // Master Generate Button with Auto-Copy
+        document.getElementById("masterGenerateBtn").addEventListener("click", () => {
+          randomizePrompt();
+          setTimeout(() => {
+            refinePrompt();
+            applyStyleMoodMatrix();
+            expandDetails();
+            applyVisualBooster();
+            const finalPrompt = buildPromptFromTemplate();
+            document.getElementById("promptBox").value = finalPrompt;
+            copyToClipboard(finalPrompt, 'masterCopyIndicator');
+          }, 100);
+        });
+      }
+
+      // Initialize app when all data is loaded
+      document.addEventListener('DOMContentLoaded', async () => {
+        try {
+          await loadAllData();
+          hideLoadingAndShowUI();
+          initControls();
+          setupEventListeners();
+        } catch (err) {
+          console.error("Error loading JSON files:", err);
+          showError(`Error loading data files: ${err.message}<br><br>Please make sure all JSON files (data.json, categoryRefiners.json, matrix.json, boosterSlots.json) are in the same directory as this HTML file.`);
+        }
+      });
+    </script>
+  </body>
+</html>

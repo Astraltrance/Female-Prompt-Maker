@@ -1,0 +1,35 @@
+{
+  "photo realistic": {
+    "          moods": [
+      "serene and peaceful atmosphere",
+      "dramatic and intense feeling",
+      "captured in a moment of poised elegance"
+    ],
+    "          lighting": [
+      "golden hour sunlight casting long shadows",
+      "bathed in soft diffused light"
+    ]
+  },
+  "digital painting": {
+    "          moods": [
+      "dramatic and intense feeling",
+      "exuding refined confidence and poise",
+      "a sense of awe and wonder"
+    ],
+    "          lighting": [
+      "illuminated by dramatic shadows",
+      "bathed in soft diffused light"
+    ]
+  },
+  "expressive anime style": {
+    "          moods": [
+      "radiating joyful and energetic vibes",
+      "radiating playful glamour and charm",
+      "a sense of awe and wonder"
+    ],
+    "          lighting": [
+      "bathed in soft diffused light",
+      "glowing with neon lights"
+    ]
+  }
+}

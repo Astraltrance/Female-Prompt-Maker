@@ -3,227 +3,640 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Text2Image Prompt Maker</title>
+    <title>Middlehand for Imaginary Female Visuals</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #ec4899;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --dark: #1f2937;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        --border-radius: 12px;
+        --border-radius-lg: 16px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
-        font-family: Arial, sans-serif;
-        background: #f5f5f5;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        margin: 0;
         padding: 20px;
+        line-height: 1.6;
+        color: var(--gray-700);
       }
+
       #main {
-        max-width: 800px;
-        margin: auto;
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-width: 1200px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.2);
       }
-      h1 {
+
+      .header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: white;
+        padding: 40px;
         text-align: center;
+        position: relative;
+        overflow: hidden;
       }
-      .controls {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 15px;
+
+      .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="a" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(255,255,255,0.1)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient></defs><circle cx="200" cy="200" r="100" fill="url(%23a)"/><circle cx="800" cy="300" r="150" fill="url(%23a)"/><circle cx="400" cy="700" r="120" fill="url(%23a)"/></svg>');
+        opacity: 0.3;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 10px 0;
+        position: relative;
+        z-index: 1;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .header .subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        font-weight: 400;
+        position: relative;
+        z-index: 1;
+      }
+
+      .content {
+        padding: 40px;
+      }
+
+      .loading, .error {
+        text-align: center;
+        padding: 60px 20px;
+        font-size: 1.1rem;
+      }
+
+      .loading {
+        color: var(--gray-500);
+        background: var(--gray-50);
+        border-radius: var(--border-radius);
+        border: 2px dashed var(--gray-200);
         margin: 20px 0;
       }
+
+      .error {
+        color: var(--danger);
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: var(--border-radius);
+        margin: 20px 0;
+      }
+
+      .controls-section {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 10px;
+        margin-bottom: 30px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--gray-200);
+      }
+
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0 0 20px 0;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--gray-100);
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+      }
+
       .control-group {
-        display: flex;
-        flex-direction: column;
-      }
-      .control-group label {
-        font-weight: bold;
-        margin-bottom: 5px;
-      }
-      .control-group select {
-        padding: 6px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        background: #fff;
-      }
-      #buttons {
-        text-align: center;
-        margin-bottom: 15px;
-      }
-      button {
-        margin: 0 10px;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 16px;
-      }
-      #copyBtn {
-        background: #007bff;
-        color: #fff;
-      }
-      #masterGenerateBtn {
-        background: #28a745;
-        color: #fff;
         position: relative;
       }
-      #promptBox {
-        width: 100%;
-        height: 200px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        resize: vertical;
-        font-size: 14px;
+
+      .control-group label {
+        display: block;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
-      .copy-indicator {
-        position: absolute;
-        top: -25px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #28a745;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        display: none;
+
+      .control-group select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid var(--gray-200);
+        border-radius: var(--border-radius);
+        background: white;
+        font-size: 0.95rem;
+        color: var(--gray-700);
+        transition: all 0.2s ease;
+        appearance: none;
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>');
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px;
+        cursor: pointer;
+      }
+
+      .control-group select:hover {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      }
+
+      .control-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      }
+
+      .workflow-section {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 1px solid var(--gray-200);
+      }
+
+      .advanced-section {
+        background: white;
+        border-radius: var(--border-radius);
+        margin-bottom: 30px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--gray-200);
+        overflow: hidden;
+      }
+
+      .advanced-header {
+        padding: 2px 30px;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s ease;
+        border-bottom: 1px solid var(--gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .advanced-header:hover {
+        background: var(--gray-50);
+      }
+
+      .advanced-header .section-title {
+        margin: 0;
+        border: none;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .advanced-subtitle {
+        font-size: 0.9rem;
+        color: var(--gray-500);
+        font-weight: 400;
+      }
+
+      .toggle-icon {
+        font-size: 1.2rem;
+        color: var(--gray-400);
+        transition: transform 0.3s ease;
+        margin-left: 10px;
+      }
+
+      .toggle-icon.expanded {
+        transform: rotate(180deg);
+      }
+
+      .advanced-content {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease, padding 0.4s ease;
+        padding: 0 30px;
+      }
+
+      .advanced-content.expanded {
+        max-height: 1000px;
+        padding: 30px;
+      }
+
+      .advanced-content.collapsed {
+        max-height: 0;
+        padding: 0 30px;
+      }
+
+      .workflow-step {
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .workflow-step:last-child {
+        margin-bottom: 0;
+      }
+
+      .step-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
         white-space: nowrap;
       }
+
+      .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+      }
+
+      .btn:hover::before {
+        left: 100%;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        box-shadow: var(--shadow);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, var(--gray-600) 0%, var(--gray-700) 100%);
+        color: white;
+        box-shadow: var(--shadow);
+      }
+
+      .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .btn-success {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        color: white;
+        box-shadow: var(--shadow);
+      }
+
+      .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .btn-warning {
+        background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+        color: white;
+        box-shadow: var(--shadow);
+      }
+
+      .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .master-button-section {
+        text-align: center;
+        margin: 40px 0;
+        position: relative;
+      }
+
+      .btn-master {
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding: 18px 40px;
+        background: linear-gradient(135deg, var(--secondary) 0%, #be185d 100%);
+        color: white;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-master:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-xl);
+      }
+
+      .btn-master::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+      }
+
+      .btn-master:active::after {
+        width: 300px;
+        height: 300px;
+      }
+
+      .copy-indicator {
+        position: absolute;
+        top: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--success);
+        color: white;
+        padding: 8px 16px;
+        border-radius: var(--border-radius);
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: none;
+        white-space: nowrap;
+        box-shadow: var(--shadow);
+        animation: fadeInOut 2s ease-in-out;
+      }
+
+      @keyframes fadeInOut {
+        0%, 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+        20%, 80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      }
+
       .copy-indicator::after {
-        content: "";
+        content: '';
         position: absolute;
         top: 100%;
         left: 50%;
-        margin-left: -5px;
-        border: 5px solid transparent;
-        border-top-color: #28a745;
+        margin-left: -6px;
+        border: 6px solid transparent;
+        border-top-color: var(--success);
       }
-      .loading {
-        text-align: center;
-        color: #666;
-        font-style: italic;
-        padding: 20px;
+
+      .output-section {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 12px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--gray-200);
       }
-      .error {
-        text-align: center;
-        color: #dc3545;
-        background: #f8d7da;
+
+      .output-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .output-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-800);
+      }
+
+      .copy-status {
+        color: var(--success);
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: none;
+        align-items: center;
+        gap: 5px;
+      }
+
+      #promptBox {
+        width: 100%;
+        min-height: 250px;
         padding: 15px;
-        border-radius: 4px;
-        margin: 10px 0;
-        border: 1px solid #f5c6cb;
+        border: 2px solid var(--gray-200);
+        border-radius: var(--border-radius);
+        resize: vertical;
+        font-family: 'Inter', monospace;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: var(--gray-700);
+        background: var(--gray-50);
+        transition: border-color 0.2s ease;
+      }
+
+      #promptBox:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        background: white;
+      }
+
+      .emoji {
+        font-size: 1.2em;
+        margin-right: 4px;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 2rem;
+        }
+        
+        .content {
+          padding: 20px;
+        }
+        
+        .controls {
+          grid-template-columns: 1fr;
+        }
+        
+        .controls-section,
+        .workflow-section,
+        .output-section {
+          padding: 20px;
+        }
+        
+        .btn-master {
+          padding: 16px 32px;
+          font-size: 1rem;
+        }
+      }
+
+      /* Animation for showing sections */
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Loading animation */
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--gray-300);
+        border-radius: 50%;
+        border-top-color: var(--primary);
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
       }
     </style>
   </head>
   <body>
     <div id="main">
-      <h1>Text2Image Prompt Maker</h1>
-
-      <div id="loadingMessage" class="loading">Loading data files...</div>
-      <div id="errorMessage" class="error" style="display: none"></div>
-
-      <div class="controls" id="controls" style="display: none"></div>
-
-      <div id="buttons" style="display: none">
-        <button id="copyBtn">Copy Prompt</button>
-        <span
-          id="copyStatus"
-          style="margin-left: 10px; color: green; display: none"
-          >✓ Copied</span
-        >
+      <div class="header">
+        <h1>✨ Middlehand for Imaginary Female Visuals</h1>
+        <div class="subtitle">Prompt Generator for creating descriptive Female T2I Prompts</div>
       </div>
 
-      <!-- Step 1: Base Randomization -->
-      <div
-        style="text-align: center; margin-bottom: 10px; display: none"
-        class="button-section"
-      >
-        <button
-          id="randomBtn"
-          title="Randomly fills all dropdowns for a fresh character setup."
-        >
-          🎲 1. Randomize Prompt
-        </button>
-      </div>
+      <div class="content">
+        <div id="loadingMessage" class="loading">
+          <div class="loading-spinner"></div>
+          Loading data files...
+        </div>
+        <div id="errorMessage" class="error" style="display: none"></div>
 
-      <!-- Step 2: Core Enhancement Passes -->
-      <div
-        style="text-align: center; margin-bottom: 10px; display: none"
-        class="button-section"
-      >
-        <button
-          id="refineBtn"
-          title="Adds category-specific visual detail for hair, clothing, body, etc."
-        >
-          🔧 2. Refine Prompt
-        </button>
-        <button
-          id="styleMoodBtn"
-          title="Matches mood and lighting to your selected style for scene coherence."
-        >
-          🎨 3. Apply Style-Mood Matrix
-        </button>
-      </div>
+        <!-- Master Button - Now at the top! -->
+        <div class="master-button-section" id="masterSection" style="display: none">
+          <button id="masterGenerateBtn" class="btn btn-master" title="Runs all steps in optimal order to build a high-quality, coherent image prompt and automatically copies it to clipboard.">
+            <span class="emoji">⚡</span> Generate Prompt & Copy
+          </button>
+          <div id="masterCopyIndicator" class="copy-indicator">
+            ✓ Copied to Clipboard!
+          </div>
+        </div>
 
-      <!-- Step 3: Scene & Motion -->
-      <div
-        style="text-align: center; margin-bottom: 10px; display: none"
-        class="button-section"
-      >
-        <button
-          id="detailBtn"
-          title="Adds environmental or scene-based visual elements based on setting."
-        >
-          🌄 4. Expand Details
-        </button>
-        <button
-          id="boosterBtn"
-          title="Adds one visual action or expression booster for realism or movement."
-        >
-          🎬 5. Add Visual Booster
-        </button>
-      </div>
+        <!-- Advanced Controls - Collapsible Section -->
+        <div class="advanced-section fade-in" id="advancedSection">
+          <div class="advanced-header" id="advancedToggle">
+            <h2 class="section-title">
+              <span class="emoji">🔧</span> Advanced Controls
+              <span class="toggle-icon">▼</span>
+            </h2>
+            <div class="advanced-subtitle">Manual step-by-step workflow for power users</div>
+          </div>
+          
+          <div class="advanced-content" id="advancedContent">
+            <div class="workflow-step">
+              <div class="step-label">Step 1: Base Setup</div>
+              <button id="randomBtn" class="btn btn-primary" title="Randomly fills all dropdowns for a fresh character setup.">
+                <span class="emoji">🎲</span> Randomize Prompt
+              </button>
+            </div>
 
-      <!-- Step 4: Final Assembly -->
-      <div
-        style="text-align: center; margin-bottom: 15px; display: none"
-        class="button-section"
-      >
-        <button
-          id="structuredPromptBtn"
-          title="Generates the final structured prompt using all current inputs."
-        >
-          🛠️ 6. Generate Structured Prompt
-        </button>
-      </div>
+            <div class="workflow-step">
+              <div class="step-label">Step 2-3: Core Enhancement</div>
+              <button id="refineBtn" class="btn btn-secondary" title="Adds category-specific visual detail for hair, clothing, body, etc.">
+                <span class="emoji">🔧</span> Refine Details
+              </button>
+              <button id="styleMoodBtn" class="btn btn-secondary" title="Matches mood and lighting to your selected style for scene coherence.">
+                <span class="emoji">🎨</span> Apply Style Matrix
+              </button>
+            </div>
 
-      <!-- Master Automation Button with Auto-Copy -->
-      <div
-        style="
-          text-align: center;
-          margin-bottom: 15px;
-          position: relative;
-          display: none;
-        "
-        class="button-section"
-      >
-        <button
-          id="masterGenerateBtn"
-          style="font-weight: bold; font-size: 16px; padding: 8px 20px"
-          title="Runs all steps in optimal order to build a high-quality, coherent image prompt and automatically copies it to clipboard."
-        >
-          ⚡ Build Optimized Prompt & Copy
-        </button>
-        <div id="masterCopyIndicator" class="copy-indicator">
-          ✓ Copied to Clipboard!
+            <div class="workflow-step">
+              <div class="step-label">Step 4-5: Scene & Motion</div>
+              <button id="detailBtn" class="btn btn-warning" title="Adds environmental or scene-based visual elements based on setting.">
+                <span class="emoji">🌄</span> Expand Environment
+              </button>
+              <button id="boosterBtn" class="btn btn-warning" title="Adds one visual action or expression booster for realism or movement.">
+                <span class="emoji">🎬</span> Add Visual Booster
+              </button>
+            </div>
+
+            <div class="workflow-step">
+              <div class="step-label">Step 6: Final Assembly</div>
+              <button id="structuredPromptBtn" class="btn btn-success" title="Generates the final structured prompt using all current inputs.">
+                <span class="emoji">🛠️</span> Generate Structure
+              </button>
+            </div>
+
+            <div class="workflow-step">
+              <div class="step-label">Manual Copy</div>
+              <button id="copyBtn" class="btn btn-success">
+                <span class="emoji">📋</span> Copy Current Prompt
+              </button>
+              <span id="copyStatus" class="copy-status">
+                ✓ Copied!
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output Section - Now positioned after advanced controls -->
+        <div class="output-section fade-in" id="outputSection" style="display: none">
+          <div class="output-header">
+            <h2 class="output-title">📝 Generated Prompt</h2>
+          </div>
+          <textarea id="promptBox" readonly placeholder="Your crafted Text 2 Image prompt will appear here..."></textarea>
+        </div>
+
+        <!-- Character Configuration - Now at the bottom -->
+        <div class="controls-section fade-in" id="controlsSection" style="display: none">
+          <h2 class="section-title">🎨 Character Configuration</h2>
+          <div class="controls" id="controls"></div>
         </div>
       </div>
-
-      <textarea
-        id="promptBox"
-        readonly
-        placeholder="Your generated prompt will appear here..."
-        style="display: none"
-      ></textarea>
     </div>
 
     <script>
-      // Ordered categories optimized for DALL·E/Flux prompting
+      // [Original JavaScript code remains exactly the same - no functional changes]
       const orderedKeys = [
         "Subject",
         "Body Type",
@@ -239,13 +652,11 @@
         "Camera",
       ];
 
-      // Global variables for loaded data
       let data = {};
       let categoryRefiners = {};
       let matrix = {};
       let boosterSlots = {};
 
-      // Load external JSON files with better error handling
       async function loadAllData() {
         const files = [
           { name: "data.json", variable: "data" },
@@ -259,9 +670,7 @@
             try {
               const response = await fetch(file.name);
               if (!response.ok) {
-                throw new Error(
-                  `HTTP ${response.status}: ${response.statusText}`
-                );
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
               }
               const json = await response.json();
               return { file: file.name, variable: file.variable, data: json };
@@ -273,28 +682,17 @@
 
         const failed = results.filter((result) => result.status === "rejected");
         if (failed.length > 0) {
-          const errorMessages = failed
-            .map((result) => result.reason.message)
-            .join("\n");
+          const errorMessages = failed.map((result) => result.reason.message).join("\n");
           throw new Error(`Failed to load files:\n${errorMessages}`);
         }
 
-        // Assign loaded data to global variables
         results.forEach((result) => {
           const { variable, data: jsonData } = result.value;
           switch (variable) {
-            case "data":
-              data = jsonData;
-              break;
-            case "categoryRefiners":
-              categoryRefiners = jsonData;
-              break;
-            case "matrix":
-              matrix = jsonData;
-              break;
-            case "boosterSlots":
-              boosterSlots = jsonData;
-              break;
+            case "data": data = jsonData; break;
+            case "categoryRefiners": categoryRefiners = jsonData; break;
+            case "matrix": matrix = jsonData; break;
+            case "boosterSlots": boosterSlots = jsonData; break;
           }
         });
       }
@@ -309,13 +707,14 @@
       function hideLoadingAndShowUI() {
         document.getElementById("loadingMessage").style.display = "none";
         document.getElementById("errorMessage").style.display = "none";
-        document.getElementById("controls").style.display = "grid";
-        document.getElementById("buttons").style.display = "block";
-        document.getElementById("promptBox").style.display = "block";
-
-        // Show all button sections
-        const buttonSections = document.querySelectorAll(".button-section");
-        buttonSections.forEach((section) => (section.style.display = "block"));
+        
+        // Show sections with staggered animation
+        const sections = ['controlsSection', 'workflowSection', 'masterSection', 'outputSection'];
+        sections.forEach((id, index) => {
+          setTimeout(() => {
+            document.getElementById(id).style.display = "block";
+          }, index * 150);
+        });
       }
 
       function initControls() {
@@ -340,10 +739,8 @@
           placeholder.selected = true;
           sel.appendChild(placeholder);
 
-          // Handle both nested objects and arrays in data
           if (data[key]) {
             if (typeof data[key] === "object" && !Array.isArray(data[key])) {
-              // Nested object with categories
               Object.keys(data[key]).forEach((label) => {
                 const optgroup = document.createElement("optgroup");
                 optgroup.label = label;
@@ -358,7 +755,6 @@
                 sel.appendChild(optgroup);
               });
             } else if (Array.isArray(data[key])) {
-              // Simple array
               data[key].forEach((opt) => {
                 const o = document.createElement("option");
                 o.value = opt;
@@ -374,13 +770,10 @@
         updatePrompt();
       }
 
-      // Update prompt by concatenating selected values
       function updatePrompt() {
         const parts = orderedKeys
           .map((key) => {
-            const sel = document.getElementById(
-              key.replace(/\s/g, "") + "Select"
-            );
+            const sel = document.getElementById(key.replace(/\s/g, "") + "Select");
             return sel ? sel.value : "";
           })
           .filter((val) => val && !/^-.+-$/.test(val));
@@ -389,16 +782,11 @@
 
       function randomizePrompt() {
         orderedKeys.forEach((key) => {
-          const select = document.getElementById(
-            key.replace(/\s/g, "") + "Select"
-          );
+          const select = document.getElementById(key.replace(/\s/g, "") + "Select");
           if (!select) return;
 
-          // Check if this is an optional category that should be skipped sometimes
           if (key === "Hair Accessories" || key === "Common Accessories") {
             const milliseconds = new Date().getMilliseconds();
-
-            // Use different millisecond patterns so they don't skip together
             if (key === "Hair Accessories" && milliseconds % 3 === 0) {
               select.value = "";
               return;
@@ -408,32 +796,26 @@
             }
           }
 
-          const options = Array.from(select.options).filter(
-            (o) => !o.disabled && o.value
-          );
+          const options = Array.from(select.options).filter((o) => !o.disabled && o.value);
           if (options.length > 0) {
-            const randomOption =
-              options[Math.floor(Math.random() * options.length)];
+            const randomOption = options[Math.floor(Math.random() * options.length)];
             select.value = randomOption.value;
           }
         });
         updatePrompt();
       }
 
-      // Enhanced copy function with visual feedback
       function copyToClipboard(text, indicatorId = "copyStatus") {
-        return navigator.clipboard
-          .writeText(text)
+        return navigator.clipboard.writeText(text)
           .then(() => {
             const indicator = document.getElementById(indicatorId);
-            indicator.style.display = "inline";
+            indicator.style.display = indicatorId === "masterCopyIndicator" ? "block" : "inline-flex";
             setTimeout(() => {
               indicator.style.display = "none";
             }, 2000);
           })
           .catch((err) => {
             console.error("Failed to copy text: ", err);
-            // Fallback for older browsers
             const textArea = document.createElement("textarea");
             textArea.value = text;
             document.body.appendChild(textArea);
@@ -441,14 +823,13 @@
             document.execCommand("copy");
             document.body.removeChild(textArea);
             const indicator = document.getElementById(indicatorId);
-            indicator.style.display = "inline";
+            indicator.style.display = indicatorId === "masterCopyIndicator" ? "block" : "inline-flex";
             setTimeout(() => {
               indicator.style.display = "none";
             }, 2000);
           });
       }
 
-      // --- Enhancement Functions ---
       function getCategoryRefiner(category, value) {
         if (categoryRefiners[category] && categoryRefiners[category][value]) {
           const list = categoryRefiners[category][value];
@@ -471,27 +852,15 @@
 
         const { moods = [], lighting = [] } = matrix[key];
         return {
-          mood:
-            moods.length > 0
-              ? moods[Math.floor(Math.random() * moods.length)]
-              : "",
-          lighting:
-            lighting.length > 0
-              ? lighting[Math.floor(Math.random() * lighting.length)]
-              : "",
+          mood: moods.length > 0 ? moods[Math.floor(Math.random() * moods.length)] : "",
+          lighting: lighting.length > 0 ? lighting[Math.floor(Math.random() * lighting.length)] : "",
         };
       }
 
       function cleanPhrasing(rawPrompt) {
         let result = rawPrompt;
-        result = result.replace(
-          /\bwith ([^,]+), with ([^,]+)/gi,
-          "with $1 and $2"
-        );
-        result = result.replace(
-          /\bwearing ([^,]+), wearing ([^,]+)/gi,
-          "wearing $1 and $2"
-        );
+        result = result.replace(/\bwith ([^,]+), with ([^,]+)/gi, "with $1 and $2");
+        result = result.replace(/\bwearing ([^,]+), wearing ([^,]+)/gi, "wearing $1 and $2");
         result = result.replace(/,\s*$/, "");
         result = result.charAt(0).toUpperCase() + result.slice(1);
         if (!result.endsWith(".")) result += ".";
@@ -500,9 +869,7 @@
 
       function buildPromptFromTemplate() {
         const getVal = (label) => {
-          const select = document.getElementById(
-            label.replace(/\s/g, "") + "Select"
-          );
+          const select = document.getElementById(label.replace(/\s/g, "") + "Select");
           return select?.value || "";
         };
 
@@ -521,14 +888,8 @@
 
         const hairRefiner = getCategoryRefiner("Hair Style", hair);
         const clothingRefiner = getCategoryRefiner("Clothing", clothing);
-        const accessoryRefiner = getCategoryRefiner(
-          "Common Accessories",
-          accessories
-        );
-        const hairAccessoryRefiner = getCategoryRefiner(
-          "Hair Accessories",
-          hairAccessories
-        );
+        const accessoryRefiner = getCategoryRefiner("Common Accessories", accessories);
+        const hairAccessoryRefiner = getCategoryRefiner("Hair Accessories", hairAccessories);
         const bodyRefiner = getCategoryRefiner("Body Type", body);
         const moodRefiner = getCategoryRefiner("Mood", mood);
 
@@ -536,29 +897,13 @@
         const finalMood = mood || matrixResult.mood;
         const finalLighting = lighting || matrixResult.lighting;
 
-        const appearance = [
-          hairColor,
-          hair,
-          hairRefiner,
-          body,
-          bodyRefiner,
-          clothing,
-          clothingRefiner,
-        ]
-          .filter(Boolean)
-          .join(", ");
-        const adornment = [
-          hairAccessories,
-          hairAccessoryRefiner,
-          accessories,
-          accessoryRefiner,
-        ]
-          .filter(Boolean)
-          .join(", ");
+        const appearance = [hairColor, hair, hairRefiner, body, bodyRefiner, clothing, clothingRefiner]
+          .filter(Boolean).join(", ");
+        const adornment = [hairAccessories, hairAccessoryRefiner, accessories, accessoryRefiner]
+          .filter(Boolean).join(", ");
         const scene = environment ? `standing in ${environment}` : "";
         const styleMoodLight = [style, finalMood, moodRefiner, finalLighting]
-          .filter(Boolean)
-          .join(", ");
+          .filter(Boolean).join(", ");
 
         const structuredParts = [
           `A ${subject || "woman"}`,
@@ -569,10 +914,7 @@
           camera,
         ].filter(Boolean);
 
-        const rawPrompt = structuredParts
-          .join(", ")
-          .replace(/\s+,/g, ",")
-          .trim();
+        const rawPrompt = structuredParts.join(", ").replace(/\s+,/g, ",").trim();
         return cleanPhrasing(rawPrompt);
       }
 
@@ -604,8 +946,7 @@
 
           const hasLighting = lighting.some((l) => current.includes(l));
           if (!hasLighting && lighting.length > 0) {
-            const randomLighting =
-              lighting[Math.floor(Math.random() * lighting.length)];
+            const randomLighting = lighting[Math.floor(Math.random() * lighting.length)];
             box.value += `, ${randomLighting}`;
           }
         }
@@ -618,10 +959,7 @@
           "surrounded by ambient environmental details",
           "with natural lighting effects",
         ];
-        const detail =
-          environmentDetails[
-            Math.floor(Math.random() * environmentDetails.length)
-          ];
+        const detail = environmentDetails[Math.floor(Math.random() * environmentDetails.length)];
         if (!box.value.toLowerCase().includes(detail.toLowerCase())) {
           box.value += `, ${detail}`;
         }
@@ -636,17 +974,12 @@
           Object.entries(boosterSlots).forEach(([slot, options]) => {
             if (!Array.isArray(options)) return;
 
-            const already = options.some((opt) =>
-              current.includes(opt.toLowerCase())
-            );
+            const already = options.some((opt) => current.includes(opt.toLowerCase()));
             if (already) return;
 
-            const available = options.filter(
-              (opt) => !current.includes(opt.toLowerCase())
-            );
+            const available = options.filter((opt) => !current.includes(opt.toLowerCase()));
             if (available.length > 0) {
-              const pick =
-                available[Math.floor(Math.random() * available.length)];
+              const pick = available[Math.floor(Math.random() * available.length)];
               added.push(pick);
             }
           });
@@ -657,52 +990,54 @@
         }
       }
 
-      function setupEventListeners() {
-        // Copy to clipboard (original button)
-        document.getElementById("copyBtn").addEventListener("click", () => {
-          copyToClipboard(document.getElementById("promptBox").value);
-        });
+function setupEventListeners() {
+  document.getElementById("copyBtn").addEventListener("click", () => {
+    copyToClipboard(document.getElementById("promptBox").value);
+  });
 
-        document
-          .getElementById("randomBtn")
-          .addEventListener("click", randomizePrompt);
-        document
-          .getElementById("refineBtn")
-          .addEventListener("click", refinePrompt);
-        document
-          .getElementById("styleMoodBtn")
-          .addEventListener("click", applyStyleMoodMatrix);
-        document
-          .getElementById("detailBtn")
-          .addEventListener("click", expandDetails);
-        document
-          .getElementById("boosterBtn")
-          .addEventListener("click", applyVisualBooster);
-        document
-          .getElementById("structuredPromptBtn")
-          .addEventListener("click", () => {
-            const box = document.getElementById("promptBox");
-            box.value = buildPromptFromTemplate();
-          });
+  document.getElementById("randomBtn").addEventListener("click", randomizePrompt);
+  document.getElementById("refineBtn").addEventListener("click", refinePrompt);
+  document.getElementById("styleMoodBtn").addEventListener("click", applyStyleMoodMatrix);
+  document.getElementById("detailBtn").addEventListener("click", expandDetails);
+  document.getElementById("boosterBtn").addEventListener("click", applyVisualBooster);
+  document.getElementById("structuredPromptBtn").addEventListener("click", () => {
+    const box = document.getElementById("promptBox");
+    box.value = buildPromptFromTemplate();
+  });
 
-        // Master Generate Button with Auto-Copy
-        document
-          .getElementById("masterGenerateBtn")
-          .addEventListener("click", () => {
-            randomizePrompt();
-            setTimeout(() => {
-              refinePrompt();
-              applyStyleMoodMatrix();
-              expandDetails();
-              applyVisualBooster();
-              const finalPrompt = buildPromptFromTemplate();
-              document.getElementById("promptBox").value = finalPrompt;
-              copyToClipboard(finalPrompt, "masterCopyIndicator");
-            }, 100);
-          });
-      }
+  document.getElementById("masterGenerateBtn").addEventListener("click", () => {
+    randomizePrompt();
+    setTimeout(() => {
+      refinePrompt();
+      applyStyleMoodMatrix();
+      expandDetails();
+      applyVisualBooster();
+      const finalPrompt = buildPromptFromTemplate();
+      document.getElementById("promptBox").value = finalPrompt;
+      copyToClipboard(finalPrompt, "masterCopyIndicator");
+    }, 100);
+  });
 
-      // Initialize app when all data is loaded
+  // 🔧 FIX: toggle advanced section
+  const toggle = document.getElementById("advancedToggle");
+  const content = document.getElementById("advancedContent");
+  const icon = toggle.querySelector(".toggle-icon");
+
+  toggle.addEventListener("click", () => {
+    const expanded = content.classList.contains("expanded");
+    if (expanded) {
+      content.classList.remove("expanded");
+      content.classList.add("collapsed");
+      icon.classList.remove("expanded");
+    } else {
+      content.classList.remove("collapsed");
+      content.classList.add("expanded");
+      icon.classList.add("expanded");
+    }
+  });
+}
+
+
       document.addEventListener("DOMContentLoaded", async () => {
         try {
           await loadAllData();

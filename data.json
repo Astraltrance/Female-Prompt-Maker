@@ -1,9 +1,22 @@
 {
   "Subject": [
-    "she is a young adult girl",
-    "a young woman",
+    "a girl approaching adulthood",
+    "a girl in her early twenties",
+    "a late-teen girl",
+    "a teen girl",
+    "a teen woman",
+    "a teenage girl",
+    "a woman in her early thirties",
+    "a woman in her mid-twenties",
+    "a woman",
+    "a young adult female",
+    "a young lady in her early twenties",
     "a young lady",
-    "a woman"
+    "a young woman in her prime",
+    "a young woman",
+    "an adult female",
+    "an adult woman",
+    "she is a young adult girl"
   ],
   "Body Type": [
     "with an athletic and agile build",
@@ -31,7 +44,7 @@
       "with loose beach waves cascading over her shoulders",
       "with a high ponytail",
       "with layered hair framing the face softly",
-      "with asymmetrical bob and subtle highlights",
+      "with asymmetrical bob",
       "with a half-up, half-down twisted braid",
       "with shoulder-length curls bouncing naturally",
       "with a messy bun with loose tendrils",
@@ -351,6 +364,7 @@
       "wearing a jeweled tiara sparkling in the light",
       "wearing a military-style peaked cap",
       "wearing a stylish fedora hat",
+      "wearing a top hat with a satin ribbon",
       "wearing a velvet turban with a jeweled brooch",
       "with a bohemian-style headband across her forehead",
       "with a chic silk headscarf",
@@ -432,19 +446,44 @@
   "Mood": [
     "a feeling of suspense and mystery",
     "a sense of awe and wonder",
+    "captured in a candid moment with natural expressions",
     "captured in a moment of poised elegance",
     "captured in a moment of quiet contemplation",
     "captured in a moment of vintage elegance",
+    "capturing a dramatic flair and commanding poise",
+    "capturing a fleeting moment of magical whimsy",
+    "capturing a fleeting sense of enchantment",
+    "capturing a playful yet elegant presence",
+    "capturing a serene mystical aura",
+    "capturing a twinkle of joyful wonder in her eyes",
+    "capturing the charm of subtle sophistication",
+    "capturing the innocence of quiet delight",
     "dramatic and intense feeling",
     "evoking mystery in a bygone era",
+    "exuding a mischievous sense of hidden secrets",
     "exuding confidence and power",
+    "exuding gentle warmth and inviting charm",
     "exuding refined confidence and poise",
+    "exuding serene confidence with approachable warmth",
+    "glimmering with subtle flirtatious energy",
+    "glowing with the charm of quiet confidence",
+    "glowing with youthful exuberance and charm",
     "graceful and composed in a timeless moment",
+    "imbued with enchanting allure and subtle intrigue",
     "imbued with historical romance and nostalgia",
+    "imbued with poetic melancholy and gentle longing",
+    "imbued with soft romantic allure and gentle poise",
+    "imbued with whimsical elegance and soft allure",
+    "radiating a mischievous sparkle and playful curiosity",
+    "radiating bright curiosity and sparkling personality",
+    "radiating ethereal mystery and soft magical energy",
     "radiating joyful and energetic vibes",
     "radiating playful glamour and charm",
+    "radiating refined grace with a hint of cheeky charm",
+    "radiating soft elegance with radiant warmth",
     "serene and contemplative with a sense of grace",
-    "serene and peaceful atmosphere"
+    "serene and peaceful atmosphere",
+    "serene with meditative stillness and gentle presence"
   ],
   "Environment": {
     "Natural Outdoor": [
@@ -705,8 +744,7 @@
       "from a dramatic aerial top-down perspective",
       "from a low angle shot for a powerful perspective",
       "cinematic over-the-shoulder view focusing on detail",
-      "from a softly lit side profile reminiscent of a painted portrait",
-      "captured in a candid moment with natural expressions"
+      "from a softly lit side profile reminiscent of a painted portrait"
     ]
   }
 }

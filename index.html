@@ -867,56 +867,72 @@
         return result;
       }
 
-      function buildPromptFromTemplate() {
-        const getVal = (label) => {
-          const select = document.getElementById(label.replace(/\s/g, "") + "Select");
-          return select?.value || "";
-        };
+function fixArticles(text) {
+  // Remove double articles like "A a woman" or "A an adult"
+  return text.replace(/\b(A|An)\s+(a|an)\s+/gi, (match, first, second) => {
+    const nextWord = text.substring(match.length).split(/\s+/)[0];
+    const vowelStart = /^[aeiouAEIOU]/.test(nextWord);
+    return vowelStart ? "An " : "A ";
+  });
+}
 
-        const subject = getVal("Subject");
-        const hair = getVal("Hair Style");
-        const hairColor = getVal("Hair Color");
-        const body = getVal("Body Type");
-        const clothing = getVal("Clothing");
-        const accessories = getVal("Common Accessories");
-        const hairAccessories = getVal("Hair Accessories");
-        const environment = getVal("Environment");
-        const style = getVal("Style");
-        const mood = getVal("Mood");
-        const lighting = getVal("Lighting");
-        const camera = getVal("Camera");
+function buildPromptFromTemplate() {
+  const getVal = (label) => {
+    const select = document.getElementById(label.replace(/\s/g, "") + "Select");
+    return select?.value || "";
+  };
 
-        const hairRefiner = getCategoryRefiner("Hair Style", hair);
-        const clothingRefiner = getCategoryRefiner("Clothing", clothing);
-        const accessoryRefiner = getCategoryRefiner("Common Accessories", accessories);
-        const hairAccessoryRefiner = getCategoryRefiner("Hair Accessories", hairAccessories);
-        const bodyRefiner = getCategoryRefiner("Body Type", body);
-        const moodRefiner = getCategoryRefiner("Mood", mood);
+  const subject = getVal("Subject");
+  const hair = getVal("Hair Style");
+  const hairColor = getVal("Hair Color");
+  const body = getVal("Body Type");
+  const clothing = getVal("Clothing");
+  const accessories = getVal("Common Accessories");
+  const hairAccessories = getVal("Hair Accessories");
+  const environment = getVal("Environment");
+  const style = getVal("Style");
+  const mood = getVal("Mood");
+  const lighting = getVal("Lighting");
+  const camera = getVal("Camera");
 
-        const matrixResult = getStyleMoodLighting(style || "");
-        const finalMood = mood || matrixResult.mood;
-        const finalLighting = lighting || matrixResult.lighting;
+  const hairRefiner = getCategoryRefiner("Hair Style", hair);
+  const clothingRefiner = getCategoryRefiner("Clothing", clothing);
+  const accessoryRefiner = getCategoryRefiner("Common Accessories", accessories);
+  const hairAccessoryRefiner = getCategoryRefiner("Hair Accessories", hairAccessories);
+  const bodyRefiner = getCategoryRefiner("Body Type", body);
+  const moodRefiner = getCategoryRefiner("Mood", mood);
 
-        const appearance = [hairColor, hair, hairRefiner, body, bodyRefiner, clothing, clothingRefiner]
-          .filter(Boolean).join(", ");
-        const adornment = [hairAccessories, hairAccessoryRefiner, accessories, accessoryRefiner]
-          .filter(Boolean).join(", ");
-        const scene = environment ? `standing in ${environment}` : "";
-        const styleMoodLight = [style, finalMood, moodRefiner, finalLighting]
-          .filter(Boolean).join(", ");
+  const matrixResult = getStyleMoodLighting(style || "");
+  const finalMood = mood || matrixResult.mood;
+  const finalLighting = lighting || matrixResult.lighting;
 
-        const structuredParts = [
-          `A ${subject || "woman"}`,
-          appearance ? `${appearance}` : "",
-          adornment ? `adorned with ${adornment}` : "",
-          scene,
-          styleMoodLight ? `in a ${styleMoodLight}` : "",
-          camera,
-        ].filter(Boolean);
+  const appearance = [hairColor, hair, hairRefiner, body, bodyRefiner, clothing, clothingRefiner]
+    .filter(Boolean).join(", ");
+  const adornment = [hairAccessories, hairAccessoryRefiner, accessories, accessoryRefiner]
+    .filter(Boolean).join(", ");
+  const scene = environment ? `standing in ${environment}` : "";
+  const styleMoodLight = [style, finalMood, moodRefiner, finalLighting]
+    .filter(Boolean).join(", ");
 
-        const rawPrompt = structuredParts.join(", ").replace(/\s+,/g, ",").trim();
-        return cleanPhrasing(rawPrompt);
-      }
+  // Clean subject to avoid double articles
+  const cleanSubject = subject ? subject.replace(/^(a|an)\s+/i, "") : "woman";
+  const firstWord = cleanSubject.split(/\s+/)[0];
+  const vowelStart = /^[aeiouAEIOU]/.test(firstWord);
+  const article = vowelStart ? "An" : "A";
+
+  const structuredParts = [
+    `${article} ${cleanSubject}`,
+    appearance ? `${appearance}` : "",
+    adornment ? `adorned with ${adornment}` : "",
+    scene,
+    styleMoodLight ? `in a ${styleMoodLight}` : "",
+    camera,
+  ].filter(Boolean);
+
+  const rawPrompt = structuredParts.join(", ").replace(/\s+,/g, ",").trim();
+  const cleanedPrompt = fixArticles(rawPrompt);
+  return cleanPhrasing(cleanedPrompt);
+}
 
       function refinePrompt() {
         const box = document.getElementById("promptBox");
